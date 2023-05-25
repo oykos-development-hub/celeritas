@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/emirkosuta/celeritas/jwt/dto"
-	"github.com/emirkosuta/celeritas/rsa"
 	"github.com/golang-jwt/jwt"
+	"github.com/oykos-development-hub/celeritas/jwt/dto"
+	"github.com/oykos-development-hub/celeritas/rsa"
 )
 
 const (

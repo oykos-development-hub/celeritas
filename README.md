@@ -1,4 +1,4 @@
 # celeritas
 
-`export GOPRIVATE=github.com/emirkosuta/{celeritas}`\
-`go get -u github.com/emirkosuta/celeritas`
+`export GOPRIVATE=github.com/oykos-development-hub/{celeritas}`\
+`go get -u github.com/oykos-development-hub/celeritas`

@@ -8,8 +8,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/emirkosuta/celeritas"
 	"github.com/fatih/color"
+	"github.com/oykos-development-hub/celeritas"
 )
 
 const version = "1.0.0"

@@ -9,7 +9,7 @@ import (
 	"$MODULENAME$/errors"
 	"$MODULENAME$/services"
 
-	"github.com/emirkosuta/celeritas"
+	"github.com/oykos-development-hub/celeritas"
 )
 
 type authHandlerImpl struct {

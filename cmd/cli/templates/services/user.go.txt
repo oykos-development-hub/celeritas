@@ -5,7 +5,7 @@ import (
 	"$MODULENAME$/dto"
 	"$MODULENAME$/errors"
 
-	"github.com/emirkosuta/celeritas"
+	"github.com/oykos-development-hub/celeritas"
 )
 
 type userServiceImpl struct {

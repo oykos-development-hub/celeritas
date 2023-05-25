@@ -8,10 +8,10 @@ import (
 	"$MODULENAME$/dto"
 	"$MODULENAME$/errors"
 
-	"github.com/emirkosuta/celeritas"
-	jwtdto "github.com/emirkosuta/celeritas/jwt/dto"
-	"github.com/emirkosuta/celeritas/mailer"
-	"github.com/emirkosuta/celeritas/urlsigner"
+	"github.com/oykos-development-hub/celeritas"
+	jwtdto "github.com/oykos-development-hub/celeritas/jwt/dto"
+	"github.com/oykos-development-hub/celeritas/mailer"
+	"github.com/oykos-development-hub/celeritas/urlsigner"
 	"github.com/golang-jwt/jwt"
 )
 

@@ -3,7 +3,7 @@ module ${APP_URL}
 go 1.19
 
 require (
-	github.com/emirkosuta/celeritas v1.0.0
+	github.com/oykos-development-hub/celeritas v1.0.0
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/upper/db/v4 v4.6.0
 )

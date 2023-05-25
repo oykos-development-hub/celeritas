@@ -8,7 +8,7 @@ import (
 	"$MODULENAME$/errors"
 	"$MODULENAME$/services"
 
-	"github.com/emirkosuta/celeritas"
+	"github.com/oykos-development-hub/celeritas"
 	"github.com/go-chi/chi/v5"
 )
 
