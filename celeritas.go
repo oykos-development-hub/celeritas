@@ -184,6 +184,13 @@ func (c *Celeritas) New(rootPath string) error {
 		redisPool = myRedisCache.Conn
 	}
 
+	if os.Getenv("MAILER_API") == "gmail" {
+		err := mailer.InitializeGmailService()
+		if err != nil {
+			return err
+		}
+	}
+
 	if os.Getenv("CACHE") == "badger" {
 		myBadgerCache = c.createClientBadgerCache()
 		c.Cache = myBadgerCache

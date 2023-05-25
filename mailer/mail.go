@@ -82,10 +82,6 @@ func (m *Mail) ChooseAPI(msg Message) error {
 	case "mailgun", "sparkpost", "sendgrid", "postmark":
 		return m.SendUsingAPI(msg, m.API)
 	case "gmail":
-		err := InitializeGmailService()
-		if err != nil {
-			return err
-		}
 		return m.SendEmailUsingGmailApi(msg)
 	default:
 		return fmt.Errorf("unknown api %s; only mailgun, sparkpost, postmark, gmail or sendgrid accepted", m.API)
