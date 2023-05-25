@@ -1,6 +1,7 @@
 package mailer
 
 import (
+	"context"
 	"errors"
 	"testing"
 )
@@ -99,6 +100,8 @@ func TestMail_buildPlainMessage(t *testing.T) {
 }
 
 func TestMail_send(t *testing.T) {
+	ctx := context.Background()
+
 	msg := Message{
 		From:        "me@here.com",
 		FromName:    "Joe",
@@ -108,7 +111,7 @@ func TestMail_send(t *testing.T) {
 		Attachments: []string{"./testdata/mail/test.html.tmpl"},
 	}
 
-	err := mailer.Send(msg)
+	err := mailer.Send(ctx, msg)
 	if err != nil {
 		t.Error(err)
 	}
@@ -117,7 +120,7 @@ func TestMail_send(t *testing.T) {
 	mailer.APIKey = "abc123"
 	mailer.APIUrl = "https://www.fake.com"
 
-	err = mailer.Send(msg)
+	err = mailer.Send(ctx, msg)
 	if err == nil {
 		t.Error("did not not get an error when we should have")
 	}
@@ -128,6 +131,8 @@ func TestMail_send(t *testing.T) {
 }
 
 func TestMail_sendUsingGmailApi(t *testing.T) {
+	ctx := context.Background()
+
 	msg := Message{
 		From:        "emir.kosuta@oykos.me",
 		FromName:    "Emir",
@@ -144,7 +149,7 @@ func TestMail_sendUsingGmailApi(t *testing.T) {
 
 	mailer.API = "gmail"
 
-	err := mailer.Send(msg)
+	err := mailer.Send(ctx, msg)
 	if err != nil {
 		t.Error(err)
 	}
@@ -153,6 +158,8 @@ func TestMail_sendUsingGmailApi(t *testing.T) {
 }
 
 func TestMail_ChooseAPI(t *testing.T) {
+	ctx := context.Background()
+
 	msg := Message{
 		From:        "me@here.com",
 		FromName:    "Joe",
@@ -162,7 +169,7 @@ func TestMail_ChooseAPI(t *testing.T) {
 		Attachments: []string{"./testdata/mail/test.html.tmpl"},
 	}
 	mailer.API = "unknown"
-	err := mailer.ChooseAPI(msg)
+	err := mailer.ChooseAPI(ctx, msg)
 	if err == nil {
 		t.Error(err)
 	}

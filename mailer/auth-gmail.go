@@ -20,8 +20,7 @@ const (
 	tokenFile       = "token.json"
 )
 
-func InitializeGmailService() error {
-	ctx := context.Background()
+func InitializeGmailService(ctx context.Context) error {
 
 	b, err := os.ReadFile(credentialsFile)
 	if err != nil {
@@ -33,7 +32,7 @@ func InitializeGmailService() error {
 	if err != nil {
 		return fmt.Errorf("unable to parse client secret file to config: %w", err)
 	}
-	client, err := getClient(config)
+	client, err := getClient(ctx, config, tokenFile)
 	if err != nil {
 		return fmt.Errorf("unable to get client: %w", err)
 	}
@@ -47,13 +46,10 @@ func InitializeGmailService() error {
 }
 
 // Retrieve a token, saves the token, then returns the generated client.
-func getClient(config *oauth2.Config) (*http.Client, error) {
-	// The file token.json stores the user's access and refresh tokens, and is
-	// created automatically when the authorization flow completes for the first
-	// time.
+func getClient(ctx context.Context, config *oauth2.Config, tokenFile string) (*http.Client, error) {
 	tok, err := tokenFromFile(tokenFile)
 	if err != nil {
-		tok, err = getTokenFromWeb(config)
+		tok, err = getTokenFromWeb(ctx, config, tokenFile)
 		if err != nil {
 			return nil, err
 		}
@@ -62,23 +58,42 @@ func getClient(config *oauth2.Config) (*http.Client, error) {
 			return nil, err
 		}
 	}
-	return config.Client(context.Background(), tok), nil
+	return config.Client(ctx, tok), nil
 }
 
 // Request a token from the web, then returns the retrieved token.
-func getTokenFromWeb(config *oauth2.Config) (*oauth2.Token, error) {
-	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline, oauth2.ApprovalForce)
-	fmt.Printf("Go to the following link in your browser then type the "+
-		"authorization code: \n%v\n", authURL)
-
-	var authCode string
-	if _, err := fmt.Scan(&authCode); err != nil {
-		return nil, fmt.Errorf("unable to read authorization code: %w", err)
-	}
-
-	tok, err := config.Exchange(context.TODO(), authCode)
+func getTokenFromWeb(ctx context.Context, config *oauth2.Config, tokenFile string) (*oauth2.Token, error) {
+	tok, err := tokenFromFile(tokenFile)
 	if err != nil {
-		return nil, fmt.Errorf("unable to retrieve token from web: %w", err)
+		ch := make(chan string)
+
+		go func() {
+			var authCode string
+			if _, err := fmt.Scan(&authCode); err != nil {
+				fmt.Printf("Error reading authorization code: %v\n", err)
+				os.Exit(1)
+			}
+			ch <- authCode // Send the authorization code to the channel
+		}()
+
+		authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline, oauth2.ApprovalForce)
+		fmt.Printf("Go to the following link in your browser then type the "+
+			"authorization code: \n%v\n", authURL)
+
+		select {
+		case <-ctx.Done():
+			return nil, fmt.Errorf("context canceled")
+		case authCode := <-ch:
+			tok, err = config.Exchange(ctx, authCode)
+			if err != nil {
+				return nil, fmt.Errorf("unable to retrieve token from web: %w", err)
+			}
+
+			err = saveToken(tokenFile, tok)
+			if err != nil {
+				return nil, fmt.Errorf("unable to save token: %w", err)
+			}
+		}
 	}
 	return tok, nil
 }

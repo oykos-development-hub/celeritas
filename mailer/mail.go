@@ -2,6 +2,7 @@ package mailer
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"html"
@@ -58,31 +59,35 @@ type Result struct {
 // and sends error/success messages back on the Results channel.
 // Note that if api and api key are set, it will prefer using
 // an api to send mail
-func (m *Mail) ListenForMail() {
+func (m *Mail) ListenForMail(ctx context.Context) {
 	for {
-		msg := <-m.Jobs
-		err := m.Send(msg)
-		if err != nil {
-			m.Results <- Result{false, err}
-		} else {
-			m.Results <- Result{true, nil}
+		select {
+		case <-ctx.Done():
+			return
+		case msg := <-m.Jobs:
+			err := m.Send(ctx, msg)
+			if err != nil {
+				m.Results <- Result{false, err}
+			} else {
+				m.Results <- Result{true, nil}
+			}
 		}
 	}
 }
 
-func (m *Mail) Send(msg Message) error {
+func (m *Mail) Send(ctx context.Context, msg Message) error {
 	if len(m.API) > 0 && len(m.APIKey) > 0 && len(m.APIUrl) > 0 && m.API != "smtp" || m.API == "gmail" {
-		return m.ChooseAPI(msg)
+		return m.ChooseAPI(ctx, msg)
 	}
 	return m.SendSMTPMessage(msg)
 }
 
-func (m *Mail) ChooseAPI(msg Message) error {
+func (m *Mail) ChooseAPI(ctx context.Context, msg Message) error {
 	switch m.API {
 	case "mailgun", "sparkpost", "sendgrid", "postmark":
 		return m.SendUsingAPI(msg, m.API)
 	case "gmail":
-		err := InitializeGmailService()
+		err := InitializeGmailService(ctx)
 		if err != nil {
 			return err
 		}
