@@ -1,0 +1,111 @@
+package handlers
+
+import (
+	"net/http"
+	"strconv"
+
+	"$MODULENAME$/dto"
+	"$MODULENAME$/errors"
+	"$MODULENAME$/services"
+
+	"github.com/emirkosuta/celeritas"
+	"github.com/go-chi/chi/v5"
+)
+
+type userHandlerImpl struct {
+	App     *celeritas.Celeritas
+	service services.UserService
+}
+
+func NewUserHandler(app *celeritas.Celeritas, userService services.UserService) UserHandler {
+	return &userHandlerImpl{
+		App:     app,
+		service: userService,
+	}
+}
+
+func (h *userHandlerImpl) CreateUser(w http.ResponseWriter, r *http.Request) {
+	var userInput dto.UserRegistrationDTO
+	h.App.ReadJSON(w, r, &userInput)
+
+	validator := h.App.Validator().ValidateStruct(&userInput)
+	if !validator.Valid() {
+		h.App.WriteErrorResponseWithData(w, errors.MapErrorToStatusCode(errors.ErrBadRequest), errors.ErrBadRequest, validator.Errors)
+		return
+	}
+
+	user, err := h.service.CreateUser(userInput)
+	if err != nil {
+		h.App.WriteErrorResponse(w, errors.MapErrorToStatusCode(err), err)
+		return
+	}
+
+	h.App.WriteDataResponse(w, http.StatusOK, "User created successfuly", user)
+}
+
+func (h *userHandlerImpl) UpdateUser(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
+	loggedInUserId, _ := strconv.Atoi(r.Header.Get("id"))
+
+	if id != loggedInUserId {
+		h.App.WriteErrorResponse(w, errors.MapErrorToStatusCode(errors.ErrUnauthorized), errors.ErrUnauthorized)
+		return
+	}
+
+	var userInput dto.UserUpdateDTO
+	h.App.ReadJSON(w, r, &userInput)
+
+	validator := h.App.Validator().ValidateStruct(&userInput)
+	if !validator.Valid() {
+		h.App.WriteErrorResponseWithData(w, errors.MapErrorToStatusCode(errors.ErrBadRequest), errors.ErrBadRequest, validator.Errors)
+		return
+	}
+
+	response, err := h.service.UpdateUser(id, userInput)
+	if err != nil {
+		h.App.WriteErrorResponse(w, errors.MapErrorToStatusCode(err), err)
+		return
+	}
+
+	h.App.WriteDataResponse(w, http.StatusOK, "User updated successfuly", response)
+}
+
+func (h *userHandlerImpl) DeleteUser(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
+	loggedInUserId, _ := strconv.Atoi(r.Header.Get("id"))
+
+	if id != loggedInUserId {
+		h.App.WriteErrorResponse(w, errors.MapErrorToStatusCode(errors.ErrUnauthorized), errors.ErrUnauthorized)
+		return
+	}
+
+	err := h.service.DeleteUser(id)
+	if err != nil {
+		h.App.WriteErrorResponse(w, errors.MapErrorToStatusCode(err), err)
+		return
+	}
+
+	h.App.WriteSuccessResponse(w, http.StatusOK, "User deleted successfuly")
+}
+
+func (h *userHandlerImpl) GetUserById(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
+
+	user, err := h.service.GetUser(id)
+	if err != nil {
+		h.App.WriteErrorResponse(w, errors.MapErrorToStatusCode(err), err)
+		return
+	}
+
+	h.App.WriteDataResponse(w, http.StatusOK, "", user)
+}
+
+func (h *userHandlerImpl) GetUserList(w http.ResponseWriter, r *http.Request) {
+	users, err := h.service.GetUserList()
+	if err != nil {
+		h.App.WriteErrorResponse(w, errors.MapErrorToStatusCode(err), err)
+		return
+	}
+
+	h.App.WriteDataResponse(w, http.StatusOK, "", users)
+}

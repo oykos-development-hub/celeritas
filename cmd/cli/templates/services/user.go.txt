@@ -1,0 +1,90 @@
+package services
+
+import (
+	"$MODULENAME$/data"
+	"$MODULENAME$/dto"
+	"$MODULENAME$/errors"
+
+	"github.com/emirkosuta/celeritas"
+)
+
+type userServiceImpl struct {
+	App  *celeritas.Celeritas
+	repo data.User
+}
+
+func NewUserServiceImpl(app *celeritas.Celeritas, repo data.User) UserService {
+	return &userServiceImpl{
+		App:  app,
+		repo: repo,
+	}
+}
+
+func (h *userServiceImpl) CreateUser(userInput dto.UserRegistrationDTO) (*dto.UserResponseDTO, error) {
+	_, err := h.repo.GetByEmail(userInput.Email)
+	if err == nil {
+		return nil, errors.ErrUserExists
+	}
+
+	u := userInput.ToUser()
+
+	id, err := h.repo.Insert(*u)
+	if err != nil {
+		return nil, errors.ErrInternalServer
+	}
+
+	u, err = u.Get(id)
+	if err != nil {
+		return nil, errors.ErrInternalServer
+	}
+
+	response := dto.ToUserResponseDTO(*u)
+
+	return &response, nil
+}
+
+func (h *userServiceImpl) UpdateUser(userId int, userInput dto.UserUpdateDTO) (*dto.UserResponseDTO, error) {
+	u, _ := h.repo.Get(userId)
+	userInput.ToUser(u)
+
+	err := h.repo.Update(*u)
+	if err != nil {
+		return nil, errors.ErrInternalServer
+	}
+
+	response := dto.ToUserResponseDTO(*u)
+
+	return &response, nil
+}
+
+func (h *userServiceImpl) DeleteUser(userId int) error {
+	err := h.repo.Delete(userId)
+	if err != nil {
+		h.App.ErrorLog.Println(err)
+		return errors.ErrInternalServer
+	}
+
+	return nil
+}
+
+func (h *userServiceImpl) GetUser(userId int) (*dto.UserResponseDTO, error) {
+	u, err := h.repo.Get(userId)
+	if err != nil {
+		h.App.ErrorLog.Println(err)
+		return nil, errors.ErrNotFound
+	}
+	response := dto.ToUserResponseDTO(*u)
+
+	return &response, nil
+}
+
+func (h *userServiceImpl) GetUserList() ([]dto.UserResponseDTO, error) {
+	u, err := h.repo.GetAll()
+	if err != nil {
+		h.App.ErrorLog.Println(err)
+		return nil, errors.ErrInternalServer
+	}
+	response := dto.ToUsersResponseDTO(u)
+
+	return response, nil
+}
