@@ -1,7 +1,6 @@
 package mailer
 
 import (
-	"context"
 	"log"
 	"os"
 	"testing"
@@ -27,8 +26,6 @@ var mailer = Mail{
 }
 
 func TestMain(m *testing.M) {
-	ctx := context.Background()
-
 	p, err := dockertest.NewPool("")
 	if err != nil {
 		log.Fatal("could not connect to docker", err)
@@ -59,7 +56,7 @@ func TestMain(m *testing.M) {
 
 	time.Sleep(5 * time.Second)
 
-	go mailer.ListenForMail(ctx)
+	go mailer.ListenForMail()
 
 	code := m.Run()
 

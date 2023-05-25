@@ -1,7 +1,6 @@
 package celeritas
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -80,8 +79,6 @@ type config struct {
 }
 
 func (c *Celeritas) New(rootPath string) error {
-	ctx := context.Background()
-
 	validate = validator.New()
 
 	pathConfig := initPaths{
@@ -237,7 +234,7 @@ func (c *Celeritas) New(rootPath string) error {
 	c.Storage = c.createStorage()
 	c.PublicStorage = c.createPublicStorage()
 	c.Mail = c.createMailer()
-	go c.Mail.ListenForMail(ctx)
+	go c.Mail.ListenForMail()
 
 	return nil
 }

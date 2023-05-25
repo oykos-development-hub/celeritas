@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/nsf/termbox-go"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/gmail/v1"
@@ -21,7 +20,9 @@ const (
 	tokenFile       = "token.json"
 )
 
-func InitializeGmailService(ctx context.Context) error {
+func InitializeGmailService() error {
+	ctx := context.Background()
+
 	b, err := os.ReadFile(credentialsFile)
 	if err != nil {
 		return fmt.Errorf("unable to read client secret file: %w", err)
@@ -32,8 +33,7 @@ func InitializeGmailService(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("unable to parse client secret file to config: %w", err)
 	}
-
-	client, err := getClient(ctx, config, tokenFile)
+	client, err := getClient(config)
 	if err != nil {
 		return fmt.Errorf("unable to get client: %w", err)
 	}
@@ -46,10 +46,14 @@ func InitializeGmailService(ctx context.Context) error {
 	return nil
 }
 
-func getClient(ctx context.Context, config *oauth2.Config, tokenFile string) (*http.Client, error) {
+// Retrieve a token, saves the token, then returns the generated client.
+func getClient(config *oauth2.Config) (*http.Client, error) {
+	// The file token.json stores the user's access and refresh tokens, and is
+	// created automatically when the authorization flow completes for the first
+	// time.
 	tok, err := tokenFromFile(tokenFile)
 	if err != nil {
-		tok, err = getTokenFromWeb(ctx, config, tokenFile)
+		tok, err = getTokenFromWeb(config)
 		if err != nil {
 			return nil, err
 		}
@@ -58,66 +62,28 @@ func getClient(ctx context.Context, config *oauth2.Config, tokenFile string) (*h
 			return nil, err
 		}
 	}
-	return config.Client(ctx, tok), nil
+	return config.Client(context.Background(), tok), nil
 }
 
-func getTokenFromWeb(ctx context.Context, config *oauth2.Config, tokenFile string) (*oauth2.Token, error) {
-	tok, err := tokenFromFile(tokenFile)
+// Request a token from the web, then returns the retrieved token.
+func getTokenFromWeb(config *oauth2.Config) (*oauth2.Token, error) {
+	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline, oauth2.ApprovalForce)
+	fmt.Printf("Go to the following link in your browser then type the "+
+		"authorization code: \n%v\n", authURL)
+
+	var authCode string
+	if _, err := fmt.Scan(&authCode); err != nil {
+		return nil, fmt.Errorf("unable to read authorization code: %w", err)
+	}
+
+	tok, err := config.Exchange(context.TODO(), authCode)
 	if err != nil {
-		ch := make(chan string)
-
-		go func() {
-			if err := termbox.Init(); err != nil {
-				fmt.Printf("Error initializing termbox: %v\n", err)
-				os.Exit(1)
-			}
-			defer termbox.Close()
-
-			prompt := "Enter the authorization code: "
-			authCode := ""
-			printPrompt(prompt)
-
-			for {
-				switch ev := termbox.PollEvent(); ev.Type {
-				case termbox.EventKey:
-					if ev.Key == termbox.KeyEnter {
-						ch <- authCode
-						return
-					} else if ev.Key == termbox.KeyBackspace || ev.Key == termbox.KeyBackspace2 {
-						if len(authCode) > 0 {
-							authCode = authCode[:len(authCode)-1]
-							fmt.Printf("\r%s%s", prompt, authCode)
-						}
-					} else if ev.Ch != 0 {
-						authCode += string(ev.Ch)
-						fmt.Printf("%c", ev.Ch)
-					}
-				}
-			}
-		}()
-
-		authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline, oauth2.ApprovalForce)
-		fmt.Printf("Go to the following link in your browser then type the "+
-			"authorization code: \n%v\n", authURL)
-
-		select {
-		case <-ctx.Done():
-			return nil, fmt.Errorf("context canceled")
-		case authCode := <-ch:
-			tok, err = config.Exchange(ctx, authCode)
-			if err != nil {
-				return nil, fmt.Errorf("unable to retrieve token from web: %w", err)
-			}
-
-			err = saveToken(tokenFile, tok)
-			if err != nil {
-				return nil, fmt.Errorf("unable to save token: %w", err)
-			}
-		}
+		return nil, fmt.Errorf("unable to retrieve token from web: %w", err)
 	}
 	return tok, nil
 }
 
+// Retrieves a token from a local file.
 func tokenFromFile(file string) (*oauth2.Token, error) {
 	f, err := os.Open(file)
 	if err != nil {
@@ -130,14 +96,15 @@ func tokenFromFile(file string) (*oauth2.Token, error) {
 		return nil, fmt.Errorf("unable to decode token file: %w", err)
 	}
 
-	return tok, nil
+	return tok, err
 }
 
+// Saves a token to a file path.
 func saveToken(path string, token *oauth2.Token) error {
 	fmt.Printf("Saving credential file to: %s\n", path)
 	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
-		return fmt.Errorf("unable to cache OAuth token: %w", err)
+		return fmt.Errorf("unable to cache oauth token: %w", err)
 	}
 	defer f.Close()
 	err = json.NewEncoder(f).Encode(token)
@@ -145,31 +112,4 @@ func saveToken(path string, token *oauth2.Token) error {
 		return fmt.Errorf("unable to encode token: %w", err)
 	}
 	return nil
-}
-
-func printPrompt(prompt string) {
-	fmt.Print(prompt)
-	termbox.Flush()
-}
-
-func init() {
-	if err := termbox.Init(); err != nil {
-		fmt.Printf("Error initializing termbox: %v\n", err)
-		os.Exit(1)
-	}
-
-	termbox.SetInputMode(termbox.InputEsc)
-}
-
-func cleanup() {
-	termbox.Close()
-}
-
-func init() {
-	if err := termbox.Init(); err != nil {
-		fmt.Printf("Error initializing termbox: %v\n", err)
-		os.Exit(1)
-	}
-
-	termbox.SetInputMode(termbox.InputEsc)
 }
