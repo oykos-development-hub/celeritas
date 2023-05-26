@@ -22,10 +22,10 @@ func makeHandler(arg3 string) error {
 
 	if plur.IsPlural(arg3) {
 		handlerName = strcase.ToCamel(plur.Singular(arg3))
-		routeBaseName = strings.ToLower(routeBaseName)
+		routeBaseName = strcase.ToKebab(routeBaseName)
 	} else {
 		handlerName = strcase.ToCamel(arg3)
-		routeBaseName = strings.ToLower(plur.Plural(arg3))
+		routeBaseName = strcase.ToKebab(plur.Plural(arg3))
 	}
 
 	fileName := cel.RootPath + "/handlers/" + strcase.ToKebab(handlerName) + ".go"
