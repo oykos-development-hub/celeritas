@@ -92,7 +92,7 @@ func insertHandlerInterface(handlerName, handlerInterfaceData string) error {
 	}
 	handlerContent := string(handlerdata)
 
-	handlerContent += handlerInterfaceData
+	handlerContent += "\n" + handlerInterfaceData
 
 	// Find the insertion point
 	insertIndex, err := findSubstringIndex(handlerContent, "type Handlers struct", 0)
@@ -106,7 +106,7 @@ func insertHandlerInterface(handlerName, handlerInterfaceData string) error {
 		return errors.New("'Register handler point not found")
 	}
 
-	handlerContent = handlerContent[:registerHandlerPoint] + "\n\t" + handlerName + "Handler " + handlerName + "Handler\n\t" + handlerContent[registerHandlerPoint:]
+	handlerContent = handlerContent[:registerHandlerPoint] + "\t" + handlerName + "Handler " + handlerName + "Handler\n\t" + handlerContent[registerHandlerPoint:]
 
 	err = copyDataToFile([]byte(handlerContent), cel.RootPath+"/handlers/handlers.go")
 	if err != nil {
