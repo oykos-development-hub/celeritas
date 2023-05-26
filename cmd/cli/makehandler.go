@@ -150,15 +150,15 @@ func wireServiceAndHandler(handlerName string, modelName string) error {
 			"\t" + wireServiceContent +
 			"\n\n\t" + initAppContent[insertIndex:]
 	} else {
-		initAppContent = initAppContent[:insertIndex] +
-			"\n\t" + initModels +
-			"\n\t" + wireServiceContent +
-			"\n\n\t" + initAppContent[insertIndex:]
-
 		err = addImportStatement(cel.RootPath+"/init-app.go", "\""+moduleName+"/data\"")
 		if err != nil {
 			return err
 		}
+
+		initAppContent = initAppContent[:insertIndex] +
+			"\n\t" + initModels +
+			"\n\t" + wireServiceContent +
+			"\n\n\t" + initAppContent[insertIndex:]
 	}
 
 	// Find the next closing curly brace after the insertion point

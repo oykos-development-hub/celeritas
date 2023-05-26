@@ -25,6 +25,9 @@ func NewAuthServiceImpl(app *celeritas.Celeritas, userRepo data.User) AuthServic
 	return &authServiceImpl{
 		App:      app,
 		userRepo: userRepo,
+		BaseService: BaseServiceImpl{
+			App: app,
+		},
 	}
 }
 
