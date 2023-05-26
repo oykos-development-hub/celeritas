@@ -138,7 +138,7 @@ func (s *authServiceImpl) ResetPasswordVerify(email, token string) (*dto.ResetPa
 		return nil, errors.ErrExpired
 	}
 
-	encryptedEmail, _ := s.encrypt(email)
+	encryptedEmail, _ := s.Encrypt(email)
 	var response dto.ResetPasswordVerifyResponse
 	response.EncryptedEmail = encryptedEmail
 
@@ -147,7 +147,7 @@ func (s *authServiceImpl) ResetPasswordVerify(email, token string) (*dto.ResetPa
 
 func (s *authServiceImpl) ResetPassword(input dto.ResetPassword) error {
 	// get and decrypt the email
-	email, err := s.decrypt(input.EncryptedEmail)
+	email, err := s.Decrypt(input.EncryptedEmail)
 	if err != nil {
 		s.App.ErrorLog.Printf("Failed to decrypt email: %v", err)
 		return errors.ErrInternalServer
