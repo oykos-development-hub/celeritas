@@ -20,14 +20,12 @@ func makeService(arg3 string) error {
 	}
 
 	var serviceName = arg3
-	var modelName = arg3
 	var tableName = arg3
 
 	plur := pluralize.NewClient()
 
 	if plur.IsPlural(arg3) {
 		serviceName = plur.Singular(arg3)
-		modelName = plur.Singular(arg3)
 		tableName = strings.ToLower(tableName)
 	} else {
 		tableName = strings.ToLower(plur.Plural(arg3))
@@ -35,13 +33,13 @@ func makeService(arg3 string) error {
 
 	serviceName = strcase.ToCamel(serviceName)
 
-	fileName := cel.RootPath + "/services/" + strings.ToLower(serviceName) + ".go"
+	fileName := cel.RootPath + "/services/" + strcase.ToKebab(serviceName) + ".go"
 	if fileExists(fileName) {
 		return errors.New(fileName + " already exists!")
 	}
 
 	service := string(data)
-	service = strings.ReplaceAll(service, "$MODELNAME$", strcase.ToCamel(modelName))
+	service = strings.ReplaceAll(service, "$MODELNAME$", serviceName)
 	service = strings.ReplaceAll(service, "$SERVICENAME$", serviceName)
 	service = strings.ReplaceAll(service, "$MODULENAME$", moduleName)
 
@@ -60,14 +58,14 @@ func makeService(arg3 string) error {
 		return err
 	}
 
-	dtoFileName := cel.RootPath + "/dto/" + strings.ToLower(modelName) + ".go"
+	dtoFileName := cel.RootPath + "/dto/" + strcase.ToKebab(serviceName) + ".go"
 	if fileExists(dtoFileName) {
 		return errors.New(dtoFileName + " already exists!")
 	}
 
 	dto := string(dtoData)
 	dto = strings.ReplaceAll(dto, "$SERVICENAME$", serviceName)
-	dto = strings.ReplaceAll(dto, "$MODELNAME$", strcase.ToCamel(modelName))
+	dto = strings.ReplaceAll(dto, "$MODELNAME$", serviceName)
 	dto = strings.ReplaceAll(dto, "$TABLENAME$", tableName)
 	dto = strings.ReplaceAll(dto, "$MODULENAME$", moduleName)
 

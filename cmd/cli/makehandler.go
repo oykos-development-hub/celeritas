@@ -28,7 +28,7 @@ func makeHandler(arg3 string) error {
 		routeBaseName = strings.ToLower(plur.Plural(arg3))
 	}
 
-	fileName := cel.RootPath + "/handlers/" + strings.ToLower(arg3) + ".go"
+	fileName := cel.RootPath + "/handlers/" + strcase.ToKebab(handlerName) + ".go"
 	if fileExists(fileName) {
 		return errors.New(fileName + " already exists!")
 	}
@@ -106,7 +106,7 @@ func insertHandlerInterface(handlerName, handlerInterfaceData string) error {
 		return errors.New("'Register handler point not found")
 	}
 
-	handlerContent = handlerContent[:registerHandlerPoint] + "\t" + handlerName + "Handler " + handlerName + "Handler\n\t" + handlerContent[registerHandlerPoint:]
+	handlerContent = handlerContent[:registerHandlerPoint] + "\n\t" + handlerName + "Handler " + handlerName + "Handler\n\t" + handlerContent[registerHandlerPoint:]
 
 	err = copyDataToFile([]byte(handlerContent), cel.RootPath+"/handlers/handlers.go")
 	if err != nil {

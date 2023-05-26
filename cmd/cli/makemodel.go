@@ -30,13 +30,12 @@ func doModel(arg3 string) error {
 
 	if plur.IsPlural(arg3) {
 		modelName = plur.Singular(arg3)
-		tableName = strings.ToLower(tableName)
-	} else {
-		tableName = strings.ToLower(plur.Plural(arg3))
 	}
+
+	tableName = strcase.ToSnake(plur.Plural(modelName))
 	modelName = strcase.ToCamel(modelName)
 
-	fileName := cel.RootPath + "/data/" + strings.ToLower(modelName) + ".go"
+	fileName := cel.RootPath + "/data/" + strcase.ToKebab(modelName) + ".go"
 	if fileExists(fileName) {
 		return err
 	}
