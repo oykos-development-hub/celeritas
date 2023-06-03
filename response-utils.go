@@ -13,6 +13,7 @@ import (
 type APIResponse struct {
 	Message string      `json:"message,omitempty"`
 	Data    interface{} `json:"data,omitempty"`
+	Total   int         `json:"total,omitempty"`
 	Error   interface{} `json:"error,omitempty"`
 }
 
@@ -59,6 +60,14 @@ func (c *Celeritas) WriteDataResponse(w http.ResponseWriter, status int, message
 	return c.WriteJSON(w, status, &APIResponse{
 		Message: message,
 		Data:    data,
+	}, headers...)
+}
+
+func (c *Celeritas) WriteDataResponseWithTotal(w http.ResponseWriter, status int, message string, data interface{}, total int, headers ...http.Header) error {
+	return c.WriteJSON(w, status, &APIResponse{
+		Message: message,
+		Data:    data,
+		Total:   total,
 	}, headers...)
 }
 
