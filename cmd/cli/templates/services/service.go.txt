@@ -20,7 +20,7 @@ func New$SERVICENAME$ServiceImpl(app *celeritas.Celeritas, repo data.$SERVICENAM
 	}
 }
 
-func (h *$SERVICENAME$ServiceImpl) Create$SERVICENAME$(input dto.Create$SERVICENAME$DTO) (*dto.$SERVICENAME$ResponseDTO, error) {
+func (h *$SERVICENAME$ServiceImpl) Create$SERVICENAME$(input dto.$SERVICENAME$DTO) (*dto.$SERVICENAME$ResponseDTO, error) {
 	data := input.To$SERVICENAME$()
 
 	id, err := h.repo.Insert(*data)
@@ -38,11 +38,16 @@ func (h *$SERVICENAME$ServiceImpl) Create$SERVICENAME$(input dto.Create$SERVICEN
 	return &res, nil
 }
 
-func (h *$SERVICENAME$ServiceImpl) Update$SERVICENAME$(id int, input dto.Update$SERVICENAME$DTO) (*dto.$SERVICENAME$ResponseDTO, error) {
-	data, _ := h.repo.Get(id)
-	input.To$SERVICENAME$(data)
+func (h *$SERVICENAME$ServiceImpl) Update$SERVICENAME$(id int, input dto.$SERVICENAME$DTO) (*dto.$SERVICENAME$ResponseDTO, error) {
+	data := input.To$SERVICENAME$()
+	data.ID = id
 
 	err := h.repo.Update(*data)
+	if err != nil {
+		return nil, errors.ErrInternalServer
+	}
+
+	data, err = h.repo.Get(id)
 	if err != nil {
 		return nil, errors.ErrInternalServer
 	}

@@ -6,14 +6,9 @@ import (
 	"$MODULENAME$/data"
 )
 
-type Create$SERVICENAME$DTO struct {
+type $SERVICENAME$DTO struct {
 	Title string `json:"title" validate:"required,min=2"`
 }
-
-type Update$SERVICENAME$DTO struct {
-	Title string `json:"title" validate:"omitempty,min=2"`
-}
-
 
 type $SERVICENAME$ResponseDTO struct {
 	Title string `json:"title"`
@@ -21,16 +16,12 @@ type $SERVICENAME$ResponseDTO struct {
 	UpdatedAt time.Time `json:"-"`
 }
 
-func (dto Create$SERVICENAME$DTO) To$SERVICENAME$() *data.$MODELNAME$ {
+func (dto $SERVICENAME$DTO) To$SERVICENAME$() *data.$MODELNAME$ {
 	return &data.$MODELNAME${
 		Title:     dto.Title,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
-}
-
-func (dto Update$SERVICENAME$DTO) To$SERVICENAME$(data *data.$MODELNAME$) {
-		data.UpdatedAt = time.Now()
 }
 
 func To$SERVICENAME$ResponseDTO(data data.$MODELNAME$) $SERVICENAME$ResponseDTO {
