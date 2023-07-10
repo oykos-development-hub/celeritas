@@ -133,20 +133,22 @@ func (c *Celeritas) New(rootPath string) error {
 		},
 	}
 
-	jwtTokenDuration, err := time.ParseDuration(os.Getenv("JWT_ACCESS_TOKEN_EXPIRY"))
-	if err != nil {
-		return err
-	}
-	jwtRefreshDuration, err := time.ParseDuration(os.Getenv("JWT_REFRESH_TOKEN_EXPIRY"))
-	if err != nil {
-		return err
-	}
+	if os.Getenv("JWT_RSA_PUBLIC") != "" {
+		jwtTokenDuration, err := time.ParseDuration(os.Getenv("JWT_ACCESS_TOKEN_EXPIRY"))
+		if err != nil {
+			return err
+		}
+		jwtRefreshDuration, err := time.ParseDuration(os.Getenv("JWT_REFRESH_TOKEN_EXPIRY"))
+		if err != nil {
+			return err
+		}
 
-	c.JwtToken = jwt.JwtToken{
-		JwtTokenTimeExp:        jwtTokenDuration,
-		JwtRefreshTokenTimeExp: jwtRefreshDuration,
-		RSAPrivate:             os.Getenv("JWT_RSA_PRIVATE"),
-		RSAPublic:              os.Getenv("JWT_RSA_PUBLIC"),
+		c.JwtToken = jwt.JwtToken{
+			JwtTokenTimeExp:        jwtTokenDuration,
+			JwtRefreshTokenTimeExp: jwtRefreshDuration,
+			RSAPrivate:             os.Getenv("JWT_RSA_PRIVATE"),
+			RSAPublic:              os.Getenv("JWT_RSA_PUBLIC"),
+		}
 	}
 
 	secure := true
