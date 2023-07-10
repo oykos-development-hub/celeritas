@@ -87,22 +87,3 @@ func (t *$MODELNAME$) Insert(m $MODELNAME$) (int, error) {
 
     return id, nil
 }
-
-// Builder is an example of using upper's sql builder
-func (t *$MODELNAME$) Builder(id int) ([]*$MODELNAME$, error) {
-    collection := upper.Collection(t.Table())
-
-    var result []*$MODELNAME$
-
-    err := collection.Session().
-        SQL().
-        SelectFrom(t.Table()).
-        Where("id > ?", id).
-        OrderBy("id").
-        All(&result)
-    if err != nil {
-        return nil, err
-    }
-    return result, nil
-}
-

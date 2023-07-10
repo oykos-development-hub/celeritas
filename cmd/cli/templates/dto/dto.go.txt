@@ -11,21 +11,21 @@ type $SERVICENAME$DTO struct {
 }
 
 type $SERVICENAME$ResponseDTO struct {
-	Title string `json:"title"`
-	CreatedAt time.Time `json:"-"`
-	UpdatedAt time.Time `json:"-"`
+	ID 				int 			`json:"id"`
+	Title 		string 		`json:"title"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 func (dto $SERVICENAME$DTO) To$SERVICENAME$() *data.$MODELNAME$ {
 	return &data.$MODELNAME${
 		Title:     dto.Title,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
 	}
 }
 
 func To$SERVICENAME$ResponseDTO(data data.$MODELNAME$) $SERVICENAME$ResponseDTO {
 	return $SERVICENAME$ResponseDTO{
+		ID: data.ID
 		Title: data.Title,
 		CreatedAt: data.CreatedAt,
 		UpdatedAt: data.UpdatedAt,
