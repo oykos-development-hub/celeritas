@@ -28,7 +28,11 @@ func New$HANDLERNAME$Handler(app *celeritas.Celeritas, $LOWERCASEHANDLER$Service
 
 func (h *$LOWERCASEHANDLER$HandlerImpl) Create$HANDLERNAME$(w http.ResponseWriter, r *http.Request) {
 	var input dto.$HANDLERNAME$DTO
-	_ = h.App.ReadJSON(w, r, &input)
+	err := h.App.ReadJSON(w, r, &input)
+	if err != nil {
+		_ = h.App.WriteErrorResponse(w, http.StatusBadRequest, err)
+		return
+	}
 
 	validator := h.App.Validator().ValidateStruct(&input)
 	if !validator.Valid() {
@@ -49,7 +53,11 @@ func (h *$LOWERCASEHANDLER$HandlerImpl) Update$HANDLERNAME$(w http.ResponseWrite
 	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
 
 	var input dto.$HANDLERNAME$DTO
-	_ = h.App.ReadJSON(w, r, &input)
+	err := h.App.ReadJSON(w, r, &input)
+	if err != nil {
+		_ = h.App.WriteErrorResponse(w, http.StatusBadRequest, err)
+		return
+	}
 
 	validator := h.App.Validator().ValidateStruct(&input)
 	if !validator.Valid() {

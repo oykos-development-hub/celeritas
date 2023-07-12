@@ -25,7 +25,7 @@ func (dto $SERVICENAME$DTO) To$SERVICENAME$() *data.$MODELNAME$ {
 
 func To$SERVICENAME$ResponseDTO(data data.$MODELNAME$) $SERVICENAME$ResponseDTO {
 	return $SERVICENAME$ResponseDTO{
-		ID: data.ID
+		ID: data.ID,
 		Title: data.Title,
 		CreatedAt: data.CreatedAt,
 		UpdatedAt: data.UpdatedAt,
