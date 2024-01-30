@@ -99,11 +99,21 @@ func (h *$LOWERCASEHANDLER$HandlerImpl) Get$HANDLERNAME$ById(w http.ResponseWrit
 }
 
 func (h *$LOWERCASEHANDLER$HandlerImpl) Get$HANDLERNAME$List(w http.ResponseWriter, r *http.Request) {
-	res, err := h.service.Get$HANDLERNAME$List()
+	var filter dto.$HANDLERNAME$FilterDTO
+
+	_ = h.App.ReadJSON(w, r, &filter)
+
+	validator := h.App.Validator().ValidateStruct(&filter)
+	if !validator.Valid() {
+		_ = h.App.WriteErrorResponseWithData(w, errors.MapErrorToStatusCode(errors.ErrBadRequest), errors.ErrBadRequest, validator.Errors)
+		return
+	}
+
+	res, total, err := h.service.Get$HANDLERNAME$List(filter)
 	if err != nil {
 		_ = h.App.WriteErrorResponse(w, errors.MapErrorToStatusCode(err), err)
 		return
 	}
 
-	_ = h.App.WriteDataResponse(w, http.StatusOK, "", res)
+	_ = h.App.WriteDataResponseWithTotal(w, http.StatusOK, "", res, int(*total))
 }

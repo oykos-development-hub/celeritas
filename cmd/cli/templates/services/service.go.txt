@@ -6,6 +6,7 @@ import (
 	"$MODULENAME$/errors"
 
 	"github.com/oykos-development-hub/celeritas"
+	up "github.com/upper/db/v4"
 )
 
 type $SERVICENAME$ServiceImpl struct {
@@ -78,13 +79,32 @@ func (h *$SERVICENAME$ServiceImpl) Get$SERVICENAME$(id int) (*dto.$SERVICENAME$R
 	return &response, nil
 }
 
-func (h *$SERVICENAME$ServiceImpl) Get$SERVICENAME$List() ([]dto.$SERVICENAME$ResponseDTO, error) {
-	data, err := h.repo.GetAll(nil)
+func (h *$SERVICENAME$ServiceImpl) Get$SERVICENAME$List(filter dto.$SERVICENAME$FilterDTO) ([]dto.$SERVICENAME$ResponseDTO, *uint64, error) {
+	conditionAndExp := &up.AndExpr{}
+	var orders []interface{}
+
+	// example of making conditions
+	// if filter.Year != nil {
+	// 	conditionAndExp = up.And(conditionAndExp, &up.Cond{"year": *filter.Year})
+	// }
+
+	if filter.SortByTitle != nil {
+		if *filter.SortByTitle == "asc" {
+			orders = append(orders, "-title")
+		} else {
+			orders = append(orders, "title")
+		}
+	}
+
+	orders = append(orders, "-created_at")
+	
+
+	data, total, err := h.repo.GetAll(filter.Page, filter.Size, conditionAndExp, orders)
 	if err != nil {
 		h.App.ErrorLog.Println(err)
-		return nil, errors.ErrInternalServer
+		return nil, nil, errors.ErrInternalServer
 	}
 	response := dto.To$SERVICENAME$ListResponseDTO(data)
 
-	return response, nil
+	return response, total, nil
 }
