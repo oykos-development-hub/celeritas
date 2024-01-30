@@ -8,7 +8,7 @@ import (
 type $MODELNAME$ struct {
     ID        int       `db:"id,omitempty"`
     Title     string    `db:"title"`
-    CreatedAt time.Time `db:"created_at"`
+    CreatedAt time.Time `db:"created_at,omitempty"`
     UpdatedAt time.Time `db:"updated_at"`
 }
 
@@ -18,23 +18,31 @@ func (t *$MODELNAME$) Table() string {
 }
 
 // GetAll gets all records from the database, using upper
-func (t *$MODELNAME$) GetAll(condition *up.Cond) ([]*$MODELNAME$, error) {
-    collection := upper.Collection(t.Table())
-    var all []*$MODELNAME$
-    var res up.Result
+func (t *$MODELNAME$) GetAll(page *int, size *int, condition *up.AndExpr, orders []interface{}) ([]*$MODELNAME$, *uint64, error) {
+	collection := upper.Collection(t.Table())
+	var all []*$MODELNAME$
+	var res up.Result
 
 	if condition != nil {
-		res = collection.Find(*condition)
+		res = collection.Find(condition)
 	} else {
 		res = collection.Find()
 	}
+	total, err := res.Count()
+	if err != nil {
+		return nil, nil, err
+	}
 
-    err := res.All(&all)
-    if err != nil {
-        return nil, err
-    }
+	if page != nil && size != nil {
+		res = paginateResult(res, *page, *size)
+	}
 
-    return all, err
+	err = res.OrderBy(orders...).All(&all)
+	if err != nil {
+		return nil,nil, err
+	}
+
+	return all, &total, err
 }
 
 // Get gets one record from the database, by id, using upper

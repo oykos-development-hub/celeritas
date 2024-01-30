@@ -17,6 +17,12 @@ type $SERVICENAME$ResponseDTO struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+type $SERVICENAME$FilterDTO struct {
+	Page *int `json:"page"`
+	Size *int `json:"size"`
+	SortByTitle    *string `json:"sort_by_title"`
+}
+
 func (dto $SERVICENAME$DTO) To$SERVICENAME$() *data.$MODELNAME$ {
 	return &data.$MODELNAME${
 		Title:     dto.Title,
