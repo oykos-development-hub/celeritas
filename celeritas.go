@@ -194,7 +194,10 @@ func (c *Celeritas) New(rootPath string) error {
 	}
 
 	if os.Getenv("CACHE") == "badger" {
-		myBadgerCache = c.createClientBadgerCache()
+		myBadgerCache, err = c.createClientBadgerCache()
+		if err != nil {
+			return err
+		}
 		c.Cache = myBadgerCache
 		badgerConn = myBadgerCache.Conn
 
@@ -366,11 +369,15 @@ func (c *Celeritas) createClientRedisCache() *cache.RedisCache {
 	return &cacheClient
 }
 
-func (c *Celeritas) createClientBadgerCache() *cache.BadgerCache {
-	cacheClient := cache.BadgerCache{
-		Conn: c.createBadgerConn(),
+func (c *Celeritas) createClientBadgerCache() (*cache.BadgerCache, error) {
+	conn, err := c.createBadgerConn()
+	if err != nil {
+		return nil, err
 	}
-	return &cacheClient
+	cacheClient := cache.BadgerCache{
+		Conn: conn,
+	}
+	return &cacheClient, nil
 }
 
 func (c *Celeritas) createRedisPool() *redis.Pool {
@@ -391,12 +398,12 @@ func (c *Celeritas) createRedisPool() *redis.Pool {
 	}
 }
 
-func (c *Celeritas) createBadgerConn() *badger.DB {
+func (c *Celeritas) createBadgerConn() (*badger.DB, error) {
 	db, err := badger.Open(badger.DefaultOptions(c.RootPath + "/tmp/badger"))
 	if err != nil {
-		return nil
+		return nil, err
 	}
-	return db
+	return db, nil
 }
 
 func (c *Celeritas) BuildDSN() string {
